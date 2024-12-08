@@ -4,9 +4,7 @@ const cryptoJs = require("crypto-js")
 const jwt = require("jsonwebtoken")
 const dotenv = require("dotenv")
 
-
 dotenv.config()
-
 
 //REGISTER
 router.post("/register", async (req, res) => {

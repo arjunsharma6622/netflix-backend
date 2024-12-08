@@ -1,6 +1,5 @@
 const mongoose = require("mongoose")
 
-
 const MovieSchema = new mongoose.Schema({
     title : {type: String, required: true, unique: true},
     desc : {type: String},
@@ -11,7 +10,11 @@ const MovieSchema = new mongoose.Schema({
     video : {type: String},
     year : {type: String},
     limit : {type: Number},
-    genre : {type: String},
+    genre: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Genre', // Reference to the Genre schema
+        required: true,
+    },
     isSeries : {type: Boolean, default: false}
 },
 {timestamps: true}
