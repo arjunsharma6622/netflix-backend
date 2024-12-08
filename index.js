@@ -26,6 +26,14 @@ app.use("/api/genre", genreRoute);
 
 connectDB(DB_URL);
 
+app.get("/", (req, res) => {
+    res.send({
+        name : "Arjun Sharma",
+        greeting : "Hello 👋👋",
+        description : "Welcome to the NETFLIX BACKEND"
+    })
+})
+
 app.listen(PORT, () => {
     console.log(`Server connected at port ${PORT}`)
 })
