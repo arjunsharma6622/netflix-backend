@@ -1,13 +1,12 @@
 const router = require("express").Router()
 const User = require("../models/User")
-const cryptoJs = require("crypto-js")
 const { verify, isAdmin } = require("../middlewares/auth")
 
 //UPDATE USER
 router.put("/:id", verify, async (req, res) => {
     if (req.user.id === req.params.id || req.user.isAdmin) {
         if (req.body.password) {
-            const hashedPassword = cryptoJs.AES.encrypt(req.body.password, process.env.SECRET_KEY).toString()
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
             req.body.password = hashedPassword
         }
 

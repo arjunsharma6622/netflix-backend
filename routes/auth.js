@@ -1,14 +1,15 @@
 const router = require("express").Router()
 const User = require("../models/User")
-const cryptoJs = require("crypto-js")
 const jwt = require("jsonwebtoken")
 const dotenv = require("dotenv")
+const bcrypt = require("bcrypt")
 
 dotenv.config()
 
 //REGISTER
 router.post("/register", async (req, res) => {
-    const hashedPassword = cryptoJs.AES.encrypt(req.body.password, process.env.SECRET_KEY).toString()
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
     const newUser = new User({
         username : req.body.username ? req.body.username : "user",
         email : req.body.email,
@@ -35,24 +36,20 @@ router.post("/login", async (req, res) => {
             return
         }
 
-        console.log("Before crypto")
+        console.log("checking pass")
 
-        //Decrypting and getting the original password out of the hashed password for checking
-        const bytes = cryptoJs.AES.decrypt(user.password, process.env.SECRET_KEY)
-        const originalPassword = bytes.toString(cryptoJs.enc.Utf8)
+        const isPasswordCorrect = await bcrypt.compare(req.body.password, user.password);
 
-        console.log("After crypto")
+        console.log("checking pass done")
 
 
-        if(originalPassword !== req.body.password) {
+        if(!isPasswordCorrect) {
             res.status(401).json("Wrong password or username")
             return
         }
+        console.log("generating jwt")
 
-        console.log("pass check done")
 
-
-        console.log("creating jwt")
         //creating a jwt TOKEN
         const accessToken = jwt.sign(
             {id : user._id, isAdmin : user.isAdmin},
