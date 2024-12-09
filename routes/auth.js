@@ -29,26 +29,38 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
     try{
         const user = await User.findOne({email : req.body.email})
+
         if(!user) {
             res.status(401).json("Wrong password or username")
             return
         }
 
+        console.log("Before crypto")
+
         //Decrypting and getting the original password out of the hashed password for checking
         const bytes = cryptoJs.AES.decrypt(user.password, process.env.SECRET_KEY)
         const originalPassword = bytes.toString(cryptoJs.enc.Utf8)
+
+        console.log("After crypto")
+
 
         if(originalPassword !== req.body.password) {
             res.status(401).json("Wrong password or username")
             return
         }
 
+        console.log("pass check done")
+
+
+        console.log("creating jwt")
         //creating a jwt TOKEN
         const accessToken = jwt.sign(
             {id : user._id, isAdmin : user.isAdmin},
             process.env.SECRET_KEY,
             {expiresIn : "5d"}
         )
+
+        console.log("jwt done")
 
         //sending everthing except the password
         const {password, ...info} = user._doc
