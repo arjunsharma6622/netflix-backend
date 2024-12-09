@@ -16,7 +16,26 @@ dotenv.config()
 const PORT = process.env.PORT
 const DB_URL = process.env.DB_URL
 
-app.use(cors({ origin: ["https://movix-admin.vercel.app/", "http://localhost:5174", "http://localhost:5173", "*"]}));
+const allowedOrigins = [
+    "https://movix-admin.vercel.app/",
+    "http://localhost:5174",
+    "http://localhost:5173",
+];
+
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            // Allow requests with no origin (like mobile apps or curl requests)
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
+        credentials: true, // If needed for cookies or authentication
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    }),
+);
 
 app.use(express.json());
 app.use("/api/auth", authRoute);
@@ -29,9 +48,9 @@ connectDB(DB_URL);
 
 app.get("/", (req, res) => {
     res.send({
-        name : "Arjun Sharma",
-        greeting : "Hello 👋👋",
-        description : "Welcome to the MOVIX BACKEND"
+        name: "Arjun Sharma",
+        greeting: "Hello 👋👋",
+        description: "Welcome to the MOVIX BACKEND"
     })
 })
 
