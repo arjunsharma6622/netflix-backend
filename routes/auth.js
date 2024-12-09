@@ -25,8 +25,6 @@ router.post("/register", async (req, res) => {
 
 })
 
-
-
 //LOGIN
 router.post("/login", async (req, res) => {
     try{
@@ -52,7 +50,6 @@ router.post("/login", async (req, res) => {
             {expiresIn : "5d"}
         )
 
-
         //sending everthing except the password
         const {password, ...info} = user._doc
 
@@ -63,5 +60,4 @@ router.post("/login", async (req, res) => {
     }
 })
 
-
-module.exports = router
+module.exports = router;

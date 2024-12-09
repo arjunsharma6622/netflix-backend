@@ -5,6 +5,7 @@ const { verify, isAdmin } = require("../middlewares/auth")
 
 //CREATE
 router.post("/", verify, isAdmin, async (req, res) => {
+    console.log(req.body)
     const newMovie = new Movie(req.body)
     try {
         const savedMovie = await newMovie.save()
@@ -67,11 +68,10 @@ router.get("/random", async (req, res) => {
     }
 })
 
-
 //GET ALL MOVIES
 router.get("/", async (req, res) => {
     try {
-        const movies = await Movie.find()
+        const movies = await Movie.find().populate("genre")
         res.status(200).json(movies.reverse())
     }
     catch (err) {
@@ -82,7 +82,7 @@ router.get("/", async (req, res) => {
 
 router.get("/find/:id", verify, async (req, res) => {
     try {
-        const movie = await Movie.findById(req.params.id)
+        const movie = await Movie.findById(req.params.id).populate("genre")
         res.status(200).json(movie)
     }
     catch (err) {

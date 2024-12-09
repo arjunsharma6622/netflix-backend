@@ -16,7 +16,8 @@ dotenv.config()
 const PORT = process.env.PORT
 const DB_URL = process.env.DB_URL
 
-app.use(cors({ origin: "*"}));
+app.use(cors({ origin: ["https://movix-admin.vercel.app/", "http://localhost:5174", "http://localhost:5173", "*"]}));
+
 app.use(express.json());
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
@@ -30,7 +31,7 @@ app.get("/", (req, res) => {
     res.send({
         name : "Arjun Sharma",
         greeting : "Hello 👋👋",
-        description : "Welcome to the NETFLIX BACKEND"
+        description : "Welcome to the MOVIX BACKEND"
     })
 })
 
