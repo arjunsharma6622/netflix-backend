@@ -27,10 +27,9 @@ router.delete("/:id", verify, isAdmin, async (req, res) => {
 }
 )
 
-//GET Lists
 router.get("/", verify, async (req, res) => {
-    const typeQuery = req.query.type
-    const genreQuery = req.query.genre
+    const typeQuery = req.query.type;
+    const genreQuery = req.query.genre;
 
     let list = [];
     try {
@@ -40,17 +39,33 @@ router.get("/", verify, async (req, res) => {
                 : null;
 
             if (!genreId) {
-                return res.status(400).json({ message: "Invalid Genre ID" })
+                return res.status(400).json({ message: "Invalid Genre ID" });
             }
 
             list = await List.aggregate([
                 { $match: { type: typeQuery, genre: genreId } },
-                { $sample: { size: 10 } }
+                { $sample: { size: 10 } },
+                {
+                    $lookup: {
+                        from: "movies", // Collection name in MongoDB
+                        localField: "content",
+                        foreignField: "_id",
+                        as: "contentDetails",
+                    },
+                },
             ]);
         } else if (typeQuery) {
             list = await List.aggregate([
                 { $match: { type: typeQuery } },
-                { $sample: { size: 10 } }
+                { $sample: { size: 10 } },
+                {
+                    $lookup: {
+                        from: "movies",
+                        localField: "content",
+                        foreignField: "_id",
+                        as: "contentDetails",
+                    },
+                },
             ]);
         } else if (genreQuery) {
             const genreId = mongoose.Types.ObjectId.isValid(genreQuery)
@@ -58,24 +73,40 @@ router.get("/", verify, async (req, res) => {
                 : null;
 
             if (!genreId) {
-                return res.status(400).json({ message: "Invalid genre ID" });
+                return res.status(400).json({ message: "Invalid Genre ID" });
             }
 
             list = await List.aggregate([
                 { $match: { genre: genreId } },
-                { $sample: { size: 10 } }
+                { $sample: { size: 10 } },
+                {
+                    $lookup: {
+                        from: "movies",
+                        localField: "content",
+                        foreignField: "_id",
+                        as: "contentDetails",
+                    },
+                },
             ]);
         } else {
-            list = await List.aggregate([{ $sample: { size: 10 } }]);
+            list = await List.aggregate([
+                { $sample: { size: 10 } },
+                {
+                    $lookup: {
+                        from: "movies",
+                        localField: "content",
+                        foreignField: "_id",
+                        as: "contentDetails",
+                    },
+                },
+            ]);
         }
-        
-        res.status(200).json(list)
-    }
-    catch (err) {
-        res.status(500).json(err)
-    }
 
-})
+        res.status(200).json(list);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
 
 //GET one list
 router.get("/:id", verify, isAdmin, async (req, res) => {
@@ -89,5 +120,19 @@ router.get("/:id", verify, isAdmin, async (req, res) => {
     }
 })
 
+router.put("/:id", verify, isAdmin, async (req, res) => {
+    try {
+        const updatedList = await List.findByIdAndUpdate(
+            req.params.id,
+            {
+                $set: req.body
+            },
+            { new: true }
+        )
+        res.status(200).json(updatedList)
+    } catch (err) {
+        res.status(500).json(err)
+    }
+})
 
 module.exports = router
