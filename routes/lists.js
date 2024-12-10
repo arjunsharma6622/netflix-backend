@@ -1,6 +1,7 @@
 const router = require("express").Router()
 const List = require("../models/List")
 const { verify, isAdmin } = require("../middlewares/auth")
+const { default: mongoose } = require("mongoose")
 
 //CREATE
 router.post("/", verify, isAdmin, async (req, res) => {
@@ -33,25 +34,41 @@ router.get("/", verify, async (req, res) => {
 
     let list = [];
     try {
-        if (typeQuery) {
-            if (genreQuery) {
-                list = await List.aggregate([
-                    { $sample: { size: 10 } },
-                    { $match: { type: typeQuery, genre: genreQuery } }
-                ])
-            }
-            else {
-                list = await List.aggregate([
-                    { $sample: { size: 10 } },
-                    { $match: { type: typeQuery } }
-                ])
+        if (typeQuery && genreQuery) {
+            const genreId = mongoose.Types.ObjectId.isValid(genreQuery)
+                ? mongoose.Types.ObjectId(genreQuery)
+                : null;
+
+            if (!genreId) {
+                return res.status(400).json({ message: "Invalid Genre ID" })
             }
 
-        }
-        else {
-            list = await List.aggregate([{ $sample: { size: 10 } }])
-        }
+            list = await List.aggregate([
+                { $match: { type: typeQuery, genre: genreId } },
+                { $sample: { size: 10 } }
+            ]);
+        } else if (typeQuery) {
+            list = await List.aggregate([
+                { $match: { type: typeQuery } },
+                { $sample: { size: 10 } }
+            ]);
+        } else if (genreQuery) {
+            const genreId = mongoose.Types.ObjectId.isValid(genreQuery)
+                ? mongoose.Types.ObjectId(genreQuery)
+                : null;
 
+            if (!genreId) {
+                return res.status(400).json({ message: "Invalid genre ID" });
+            }
+
+            list = await List.aggregate([
+                { $match: { genre: genreId } },
+                { $sample: { size: 10 } }
+            ]);
+        } else {
+            list = await List.aggregate([{ $sample: { size: 10 } }]);
+        }
+        
         res.status(200).json(list)
     }
     catch (err) {
